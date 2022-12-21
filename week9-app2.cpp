@@ -27,8 +27,6 @@ auto filter(auto func)
     };
 }
 
-
-
 template<typename T, typename Func, typename K>
 auto accumulate_(const T& v, Func func, K initial_value)
 {
@@ -64,9 +62,24 @@ auto compose(auto f, auto g)
     };
 }
 
+template<typename T>
+concept IsContainer = requires(T t) {
+    t.begin();
+    t.end();
+    t.size();
+    t.begin()++;
+};
+
 auto operator|(auto f, auto g)
 {
     return compose(f, g);
+}
+
+template<IsContainer T>
+//requires(IsContainer<T> && IsPushable<T>)
+auto operator|(T input, auto f)
+{
+    return f(input);
 }
 
 
@@ -93,20 +106,15 @@ int main(int, char* [])
     cout << sum_filtered_float << endl;
 
     auto filter_rule = [](const auto& item) { return item > 20; };
-    auto composition = v
-                       | filter(filter_rule)
+    auto result = v | filter(filter_rule)
                        | filter(filter_rule)
                        | filter(filter_rule)
                        | filter(filter_rule)
                        | filter(filter_rule)
                        | accumulate(adder(), 0.0f);
 
-    auto result = composition(v);
-
 //    auto x = TypeDisplayer<decltype(result)>{};
     cout << result << endl;
-
-
 
     return 0;
 }
